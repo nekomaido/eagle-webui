@@ -2,7 +2,7 @@
 
 import type { UnstyledButtonProps } from "@mantine/core";
 import { Text, UnstyledButton } from "@mantine/core";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { ComponentPropsWithoutRef, ComponentType, ReactNode } from "react";
 import { useMemo } from "react";
 import classes from "./MainLink.module.css";
@@ -26,6 +26,7 @@ type MainLinkProps = Omit<
     withLeftMargin?: boolean;
     className?: string;
     onClick: () => void;
+    defaultLibraryId?: string;
   };
 
 export function MainLink({
@@ -36,10 +37,12 @@ export function MainLink({
   withLeftMargin = true,
   className,
   onClick,
+  defaultLibraryId,
   ...props
 }: MainLinkProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   const isActive = useMemo(() => {
     if (pathname === to) {
@@ -51,7 +54,13 @@ export function MainLink({
 
   const handleClick = () => {
     if (pathname !== to) {
-      router.push(to);
+      // Preserve library query parameter
+      const libraryParam = searchParams.get("library");
+      const targetUrl =
+        libraryParam && defaultLibraryId && libraryParam !== defaultLibraryId
+          ? `${to}?library=${libraryParam}`
+          : to;
+      router.push(targetUrl);
     }
 
     onClick();

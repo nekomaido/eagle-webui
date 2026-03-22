@@ -1,7 +1,9 @@
 import { getTranslations } from "next-intl/server";
 import CollectionPage from "@/components/CollectionPage";
+import { getDefaultLibraryId } from "@/data/library-config";
 import { loadListScaleSetting } from "@/data/settings";
 import { getStore } from "@/data/store";
+import { getLibraryIdFromParams } from "@/utils/library-context";
 import { resolveSearchQuery, resolveTagFilter } from "@/utils/search-query";
 
 export const dynamic = "force-dynamic";
@@ -11,12 +13,17 @@ type TrashPageProps = {
 };
 
 export default async function TrashPage({ searchParams }: TrashPageProps) {
+  const resolvedSearchParams = await searchParams;
+  const defaultLibraryId = await getDefaultLibraryId();
+  const libraryId =
+    getLibraryIdFromParams(resolvedSearchParams) ?? defaultLibraryId;
+
   const [t, store, listScale] = await Promise.all([
     getTranslations(),
-    getStore(),
+    getStore(libraryId),
     loadListScaleSetting(),
   ]);
-  const resolvedSearchParams = await searchParams;
+
   const search = resolveSearchQuery(resolvedSearchParams?.search);
   const tag = resolveTagFilter(resolvedSearchParams?.tag);
   const items = store.getTrashItemPreviews(search, tag);
@@ -25,6 +32,8 @@ export default async function TrashPage({ searchParams }: TrashPageProps) {
     <CollectionPage
       title={t("collection.trash")}
       libraryPath={store.libraryPath}
+      libraryId={libraryId}
+      defaultLibraryId={defaultLibraryId}
       items={items}
       initialListScale={listScale}
       search={search}

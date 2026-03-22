@@ -15,6 +15,7 @@ import { ItemList, type ItemSelection } from "@/components/ItemList";
 import type { ItemPreview } from "@/data/types";
 import { useTranslations } from "@/i18n/client";
 import { useIsMobile } from "@/utils/responsive";
+import { buildLibraryUrl } from "@/utils/library-context";
 import {
   CollectionSortControls,
   type CollectionSortState,
@@ -31,6 +32,8 @@ import { type Subfolder, SubfolderList } from "./SubfolderList";
 interface CollectionPageProps {
   title: string;
   libraryPath: string;
+  libraryId: string;
+  defaultLibraryId: string;
   items: ItemPreview[];
   initialListScale: number;
   search: string;
@@ -66,6 +69,8 @@ export default function CollectionPage(props: CollectionPageProps) {
 function CollectionPageImpl({
   title,
   libraryPath,
+  libraryId,
+  defaultLibraryId,
   items,
   initialListScale,
   search,
@@ -82,6 +87,9 @@ function CollectionPageImpl({
   const sectionTranslations = useTranslations("collection.sections");
   const headerTranslations = useTranslations("collection.header");
   const hasActiveFilters = !!search || !!tag;
+
+  // Build home URL preserving library param
+  const homeUrl = buildLibraryUrl("/", libraryId, defaultLibraryId);
 
   const handleListScaleChange = useCallback(
     (scale: number) => {
@@ -114,7 +122,7 @@ function CollectionPageImpl({
     <>
       <AppHeader>
         <div className={classes.headerTitle}>
-          <Link href="/">{title}</Link>
+          <Link href={homeUrl}>{title}</Link>
           {hasActiveFilters && (
             <>
               <Text c="dimmed">/</Text>
@@ -155,6 +163,8 @@ function CollectionPageImpl({
           </div>
           <SubfolderList
             libraryPath={libraryPath}
+            libraryId={libraryId}
+            defaultLibraryId={defaultLibraryId}
             subfolders={subfolders}
             listScale={listScale}
             basePath={subfolderBasePath}

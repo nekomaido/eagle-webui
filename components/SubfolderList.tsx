@@ -1,6 +1,7 @@
 import { Text } from "@mantine/core";
 import Link from "next/link";
 import { useMemo } from "react";
+import { buildLibraryUrl } from "@/utils/library-context";
 import { getThumbnailUrl } from "@/utils/item";
 import { computeGridStyle } from "./listGrid";
 import classes from "./SubfolderList.module.css";
@@ -13,6 +14,8 @@ export type Subfolder = {
 
 type SubfolderListProps = {
   libraryPath: string;
+  libraryId: string;
+  defaultLibraryId: string;
   subfolders: Subfolder[];
   listScale: number;
   basePath?: string;
@@ -20,6 +23,8 @@ type SubfolderListProps = {
 
 export function SubfolderList({
   libraryPath,
+  libraryId,
+  defaultLibraryId,
   subfolders,
   listScale,
   basePath = "/folders",
@@ -34,7 +39,11 @@ export function SubfolderList({
     <div className={classes.list} style={listStyle}>
       {subfolders.map((folder) => {
         const { id, name, coverId } = folder;
-        const href = `${basePath}/${id}`;
+        const href = buildLibraryUrl(
+          `${basePath}/${id}`,
+          libraryId,
+          defaultLibraryId,
+        );
         return (
           <Link key={id} href={href} className={classes.item}>
             <div className={classes.thumbnail}>

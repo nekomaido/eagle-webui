@@ -14,12 +14,14 @@ type FolderSectionProps = {
   folders: Folder[];
   onLinkClick: () => void;
   initialExpandedIds: string[];
+  defaultLibraryId: string;
 };
 
 export function FolderSection({
   folders,
   onLinkClick,
   initialExpandedIds,
+  defaultLibraryId,
 }: FolderSectionProps) {
   const t = useTranslations();
   const folderTreeData = useMemo(() => buildFolderTreeData(folders), [folders]);
@@ -64,9 +66,10 @@ export function FolderSection({
         to,
         icon,
         count,
+        defaultLibraryId,
       };
     },
-    [aggregateFolderCounts, folderCounts],
+    [aggregateFolderCounts, folderCounts, defaultLibraryId],
   );
 
   const handleExpandedChange = useCallback(

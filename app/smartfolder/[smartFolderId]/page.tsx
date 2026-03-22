@@ -1,7 +1,9 @@
 import { notFound } from "next/navigation";
 import CollectionPage from "@/components/CollectionPage";
+import { getDefaultLibraryId } from "@/data/library-config";
 import { loadListScaleSetting } from "@/data/settings";
 import { getStore } from "@/data/store";
+import { getLibraryIdFromParams } from "@/utils/library-context";
 import { resolveSearchQuery, resolveTagFilter } from "@/utils/search-query";
 
 export const dynamic = "force-dynamic";
@@ -16,8 +18,13 @@ export default async function SmartFolderPage({
   searchParams,
 }: SmartFolderPageProps) {
   const { smartFolderId } = await params;
+  const resolvedSearchParams = await searchParams;
+  const defaultLibraryId = await getDefaultLibraryId();
+  const libraryId =
+    getLibraryIdFromParams(resolvedSearchParams) ?? defaultLibraryId;
+
   const [store, listScale] = await Promise.all([
-    getStore(),
+    getStore(libraryId),
     loadListScaleSetting(),
   ]);
   const folder = store.getSmartFolder(smartFolderId);
@@ -26,7 +33,6 @@ export default async function SmartFolderPage({
     notFound();
   }
 
-  const resolvedSearchParams = await searchParams;
   const search = resolveSearchQuery(resolvedSearchParams?.search);
   const tag = resolveTagFilter(resolvedSearchParams?.tag);
   const items = store.getSmartFolderItemPreviews(smartFolderId, search, tag);
@@ -35,6 +41,8 @@ export default async function SmartFolderPage({
     <CollectionPage
       title={folder.name}
       libraryPath={store.libraryPath}
+      libraryId={libraryId}
+      defaultLibraryId={defaultLibraryId}
       items={items}
       initialListScale={listScale}
       search={search}

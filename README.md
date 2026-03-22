@@ -64,3 +64,47 @@ After running this command, open `http://<your-computer's-LAN-IP>:34917/` from e
 | `--port`               | Server port number (default: 34917)                                                 |
 | `--eagle-library-path` | Path to the Eagle library folder (if omitted, detected automatically via Eagle API) |
 | `--eagle-api-url`      | Eagle API endpoint for library detection (default: http://localhost:41595)          |
+
+### Multi-Library Support
+
+You can configure multiple Eagle libraries and switch between them via the UI.
+
+#### Using Environment Variable
+
+Set `EAGLE_LIBRARY_PATH` to a JSON array of paths:
+
+```bash
+EAGLE_LIBRARY_PATH='["/path/to/Personal.library", "/path/to/Work.library"]' npx @naamiru/eagle-webui
+```
+
+For a single library, just use the path directly:
+
+```bash
+EAGLE_LIBRARY_PATH=/path/to/My.library npx @naamiru/eagle-webui
+```
+
+#### Using Config File
+
+Create an `eagle-libraries.json` file in your working directory for more control:
+
+```json
+{
+  "libraries": [
+    { "id": "personal", "path": "/path/to/Personal.library", "name": "Personal" },
+    { "id": "work", "path": "/path/to/Work.library", "name": "Work" }
+  ],
+  "defaultLibraryId": "personal"
+}
+```
+
+**Config File Options:**
+
+| Field                | Description                                                    |
+| -------------------- | -------------------------------------------------------------- |
+| `libraries`          | Array of library definitions                                   |
+| `libraries[].id`     | Unique identifier for the library (used in URLs)               |
+| `libraries[].path`   | Absolute path to the `.library` folder                         |
+| `libraries[].name`   | Display name shown in the UI (optional)                        |
+| `defaultLibraryId`   | ID of the default library to load                              |
+
+When multiple libraries are configured, a dropdown selector appears in the sidebar to switch between them.

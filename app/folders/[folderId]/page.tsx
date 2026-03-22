@@ -1,8 +1,10 @@
 import { notFound } from "next/navigation";
 import CollectionPage from "@/components/CollectionPage";
 import type { Subfolder } from "@/components/SubfolderList";
+import { getDefaultLibraryId } from "@/data/library-config";
 import { loadListScaleSetting } from "@/data/settings";
 import { getStore } from "@/data/store";
+import { getLibraryIdFromParams } from "@/utils/library-context";
 import { resolveSearchQuery, resolveTagFilter } from "@/utils/search-query";
 
 export const dynamic = "force-dynamic";
@@ -18,8 +20,12 @@ export default async function FolderPage({
 }: FolderPageProps) {
   const { folderId } = await params;
   const resolvedSearchParams = await searchParams;
+  const defaultLibraryId = await getDefaultLibraryId();
+  const libraryId =
+    getLibraryIdFromParams(resolvedSearchParams) ?? defaultLibraryId;
+
   const [store, listScale] = await Promise.all([
-    getStore(),
+    getStore(libraryId),
     loadListScaleSetting(),
   ]);
   const folder = store.folders.get(folderId);
@@ -56,6 +62,8 @@ export default async function FolderPage({
     <CollectionPage
       title={folder.name}
       libraryPath={store.libraryPath}
+      libraryId={libraryId}
+      defaultLibraryId={defaultLibraryId}
       items={items}
       initialListScale={listScale}
       search={search}

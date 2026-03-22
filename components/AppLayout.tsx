@@ -10,6 +10,7 @@ import {
 import { useDisclosure } from "@mantine/hooks";
 import { IconLayoutSidebarRightCollapse } from "@tabler/icons-react";
 import type { ReactNode } from "react";
+import type { LibraryDefinition } from "@/data/library-config";
 import type { NavbarExpandedState } from "@/data/settings";
 import type { SmartFolder } from "@/data/smart-folders";
 import type { Folder, ItemCounts } from "@/data/types";
@@ -23,6 +24,9 @@ type AppLayoutProps = {
   children: ReactNode;
   folders: Folder[];
   libraryName: string;
+  libraries: LibraryDefinition[];
+  defaultLibraryId: string;
+  currentLibraryId: string;
   itemCounts: ItemCounts;
   smartFolders: SmartFolder[];
   initialNavbarExpandedState: NavbarExpandedState;
@@ -37,6 +41,9 @@ export function AppLayout({
   children,
   folders,
   libraryName,
+  libraries,
+  defaultLibraryId,
+  currentLibraryId,
   itemCounts,
   smartFolders,
   initialNavbarExpandedState,
@@ -95,6 +102,9 @@ export function AppLayout({
           folders={folders}
           itemCounts={itemCounts}
           libraryName={libraryName}
+          libraries={libraries}
+          defaultLibraryId={defaultLibraryId}
+          currentLibraryId={currentLibraryId}
           smartFolders={smartFolders}
           initialNavbarExpandedState={initialNavbarExpandedState}
         />

@@ -1,0 +1,24 @@
+.trigger {
+  padding: var(--mantine-spacing-xs) var(--mantine-spacing-sm);
+  border-radius: var(--mantine-radius-sm);
+  transition: background-color 150ms ease;
+
+  &:hover {
+    background-color: var(--mantine-color-gray-0);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    &:hover {
+      background-color: var(--mantine-color-dark-6);
+    }
+  }
+}
+
+.activeItem {
+  background-color: var(--mantine-color-blue-0);
+  font-weight: 500;
+
+  @media (prefers-color-scheme: dark) {
+    background-color: var(--mantine-color-dark-5);
+  }
+}

@@ -10,10 +10,12 @@ import {
 } from "@tabler/icons-react";
 import { useCallback } from "react";
 import { useSwipeable } from "react-swipeable";
+import type { LibraryDefinition } from "@/data/library-config";
 import type { NavbarExpandedState } from "@/data/settings";
 import type { SmartFolder } from "@/data/smart-folders";
 import type { Folder, ItemCounts } from "@/data/types";
 import { useTranslations } from "@/i18n/client";
+import { LibrarySelector } from "@/components/LibrarySelector";
 import classes from "./AppNavbar.module.css";
 import { FolderSection } from "./FolderSection";
 import { MainLink } from "./MainLink";
@@ -28,6 +30,9 @@ type AppNavbarProps = {
   folders: Folder[];
   itemCounts: ItemCounts;
   libraryName: string;
+  libraries: LibraryDefinition[];
+  defaultLibraryId: string;
+  currentLibraryId: string;
   smartFolders: SmartFolder[];
   initialNavbarExpandedState: NavbarExpandedState;
 };
@@ -40,6 +45,9 @@ export function AppNavbar({
   folders,
   itemCounts,
   libraryName,
+  libraries,
+  defaultLibraryId,
+  currentLibraryId,
   smartFolders,
   initialNavbarExpandedState,
 }: AppNavbarProps) {
@@ -70,7 +78,12 @@ export function AppNavbar({
         />
 
         <div className={classes.headerMain}>
-          <ReloadButton libraryName={libraryName} />
+          <LibrarySelector
+            libraries={libraries}
+            currentLibraryId={currentLibraryId}
+            defaultLibraryId={defaultLibraryId}
+          />
+          <ReloadButton libraryName={libraryName} libraryId={currentLibraryId} />
         </div>
 
         {desktopOpened && (
@@ -94,6 +107,7 @@ export function AppNavbar({
             icon={IconInbox}
             label={t("collection.all")}
             count={itemCounts.all}
+            defaultLibraryId={defaultLibraryId}
             onClick={handleMainLinkClick}
           />
 
@@ -102,6 +116,7 @@ export function AppNavbar({
             icon={IconFolderQuestion}
             label={t("collection.uncategorized")}
             count={itemCounts.uncategorized}
+            defaultLibraryId={defaultLibraryId}
             onClick={handleMainLinkClick}
           />
 
@@ -110,6 +125,7 @@ export function AppNavbar({
             icon={IconTrash}
             label={t("collection.trash")}
             count={itemCounts.trash}
+            defaultLibraryId={defaultLibraryId}
             onClick={handleMainLinkClick}
           />
         </section>
@@ -118,12 +134,14 @@ export function AppNavbar({
           smartFolders={smartFolders}
           onLinkClick={handleMainLinkClick}
           initialExpandedIds={initialNavbarExpandedState.smartFolders}
+          defaultLibraryId={defaultLibraryId}
         />
 
         <FolderSection
           folders={folders}
           onLinkClick={handleMainLinkClick}
           initialExpandedIds={initialNavbarExpandedState.folders}
+          defaultLibraryId={defaultLibraryId}
         />
 
         <section className={classes.settingsSection}>
@@ -131,6 +149,7 @@ export function AppNavbar({
             to="/settings"
             icon={IconSettings}
             label={t("navbar.settings")}
+            defaultLibraryId={defaultLibraryId}
             onClick={handleMainLinkClick}
           />
         </section>

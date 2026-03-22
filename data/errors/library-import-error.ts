@@ -1,5 +1,7 @@
 export type LibraryImportErrorCode =
   | "LIBRARY_PATH_NOT_FOUND"
+  | "LIBRARY_NOT_FOUND"
+  | "LIBRARY_CONFIG_INVALID"
   | "INVALID_APPLICATION_VERSION"
   | "METADATA_READ_FAILURE"
   | "MTIME_READ_FAILURE"
@@ -7,6 +9,8 @@ export type LibraryImportErrorCode =
 
 export const LIBRARY_IMPORT_ERROR_MESSAGE_KEYS = {
   LIBRARY_PATH_NOT_FOUND: "errors.libraryImport.LIBRARY_PATH_NOT_FOUND",
+  LIBRARY_NOT_FOUND: "errors.libraryImport.LIBRARY_NOT_FOUND",
+  LIBRARY_CONFIG_INVALID: "errors.libraryImport.LIBRARY_CONFIG_INVALID",
   INVALID_APPLICATION_VERSION:
     "errors.libraryImport.INVALID_APPLICATION_VERSION",
   METADATA_READ_FAILURE: "errors.libraryImport.METADATA_READ_FAILURE",
@@ -19,6 +23,8 @@ type LibraryImportErrorMessageKey =
 
 const FALLBACK_MESSAGES: Record<LibraryImportErrorCode, string> = {
   LIBRARY_PATH_NOT_FOUND: "Unable to locate the Eagle library",
+  LIBRARY_NOT_FOUND: "The specified library was not found",
+  LIBRARY_CONFIG_INVALID: "Invalid library configuration",
   INVALID_APPLICATION_VERSION: "Eagle app 4.x is required",
   METADATA_READ_FAILURE: "Unable to read the library metadata",
   MTIME_READ_FAILURE: "Unable to read modification data",

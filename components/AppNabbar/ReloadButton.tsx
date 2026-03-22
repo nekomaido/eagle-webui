@@ -13,9 +13,10 @@ import classes from "./ReloadButton.module.css";
 
 type ReloadButtonProps = {
   libraryName: string;
+  libraryId: string;
 };
 
-export function ReloadButton({ libraryName }: ReloadButtonProps) {
+export function ReloadButton({ libraryName, libraryId }: ReloadButtonProps) {
   const t = useTranslations();
   const router = useRouter();
   const [isReloading, startReload] = useTransition();
@@ -27,7 +28,7 @@ export function ReloadButton({ libraryName }: ReloadButtonProps) {
   const handleReload = () => {
     startReload(async () => {
       try {
-        const result = await reloadLibrary();
+        const result = await reloadLibrary(libraryId);
 
         if (result.ok) {
           router.refresh();

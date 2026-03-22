@@ -16,6 +16,10 @@ import { AppLayout } from "@/components/AppLayout";
 import { AppMantineProvider } from "@/components/AppMantineProvider";
 import { ImportErrorScreen } from "@/components/ImportErrorScreen";
 import { ImportLoader } from "@/components/ImportLoader";
+import {
+  getDefaultLibraryId,
+  getLibraryDefinitions,
+} from "@/data/library-config";
 import { loadNavbarExpandedState } from "@/data/settings";
 import {
   getStore,
@@ -37,6 +41,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   void getStore().catch(() => undefined);
+  const defaultLibraryId = await getDefaultLibraryId();
   const importState = getStoreImportState();
   const locale = await getLocale();
   const t = await getTranslations();
@@ -50,7 +55,11 @@ export default async function RootLayout({
       <body>
         <NextIntlClientProvider>
           <AppMantineProvider>
-            <ImportStateContent state={importState} loadingLabel={loadingLabel}>
+            <ImportStateContent
+              state={importState}
+              loadingLabel={loadingLabel}
+              defaultLibraryId={defaultLibraryId}
+            >
               {children}
             </ImportStateContent>
           </AppMantineProvider>
@@ -63,10 +72,12 @@ export default async function RootLayout({
 function ImportStateContent({
   state,
   loadingLabel,
+  defaultLibraryId,
   children,
 }: {
   state: StoreInitializationState;
   loadingLabel: string;
+  defaultLibraryId: string;
   children: React.ReactNode;
 }) {
   switch (state.status) {
@@ -76,7 +87,11 @@ function ImportStateContent({
     case "error":
       return <ImportErrorScreen code={state.code} />;
     case "ready":
-      return <ImportReadyLayout>{children}</ImportReadyLayout>;
+      return (
+        <ImportReadyLayout defaultLibraryId={defaultLibraryId}>
+          {children}
+        </ImportReadyLayout>
+      );
     default:
       return null;
   }
@@ -96,10 +111,17 @@ function ImportLoadingScreen({ label }: { label: string }) {
   );
 }
 
-async function ImportReadyLayout({ children }: { children: React.ReactNode }) {
-  const [store, navbarExpandedState] = await Promise.all([
-    getStore(),
+async function ImportReadyLayout({
+  defaultLibraryId,
+  children,
+}: {
+  defaultLibraryId: string;
+  children: React.ReactNode;
+}) {
+  const store = await getStore(defaultLibraryId);
+  const [navbarExpandedState, libraries] = await Promise.all([
     loadNavbarExpandedState(),
+    getLibraryDefinitions(),
   ]);
   const libraryName = getLibraryName(store.libraryPath);
 
@@ -108,6 +130,9 @@ async function ImportReadyLayout({ children }: { children: React.ReactNode }) {
       folders={store.getFolders()}
       itemCounts={store.itemCounts}
       libraryName={libraryName}
+      libraries={libraries}
+      defaultLibraryId={defaultLibraryId}
+      currentLibraryId={store.libraryId}
       smartFolders={store.getSmartFolders()}
       initialNavbarExpandedState={navbarExpandedState}
     >

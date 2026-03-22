@@ -2,7 +2,12 @@ import {
   type LibraryImportErrorCode,
   toLibraryImportErrorCode,
 } from "./errors";
-import { discoverLibraryPath } from "./library/discover-library-path";
+import {
+  getDefaultLibraryId,
+  getLibraryPath,
+  loadLibraryConfig,
+  type LibraryDefinition,
+} from "./library-config";
 import { importLibraryMetadata } from "./library/import-metadata";
 import { loadGlobalSortSettings } from "./settings";
 import type { SmartFolder, SmartFolderItemMap } from "./smart-folders";
@@ -12,6 +17,7 @@ import type { Folder, Item, ItemCounts, ItemPreview } from "./types";
 
 export class Store {
   constructor(
+    public readonly libraryId: string,
     public readonly libraryPath: string,
     public readonly applicationVersion: string,
     public readonly folders: Map<string, Folder>,
@@ -462,68 +468,147 @@ export type StoreInitializationState =
   | { status: "ready" }
   | { status: "error"; code: LibraryImportErrorCode };
 
-let storePromise: Promise<Store> | null = null;
-let storeState: StoreInitializationState = { status: "idle" };
+// Store Registry for multi-library support
+type StoreEntry = {
+  promise: Promise<Store> | null;
+  state: StoreInitializationState;
+};
 
-export function getStoreImportState(): StoreInitializationState {
-  return storeState;
-}
+class StoreRegistry {
+  private stores: Map<string, StoreEntry> = new Map();
+  private defaultLibraryId: string | null = null;
 
-export async function getStore(): Promise<Store> {
-  if (!storePromise) {
-    storeState = { status: "loading" };
+  async getStore(libraryId?: string): Promise<Store> {
+    const id = await this.resolveLibraryId(libraryId);
 
-    storePromise = (async () => {
-      try {
-        const store = await initializeStore();
-        storeState = { status: "ready" };
-        return store;
-      } catch (error) {
-        const code = toLibraryImportErrorCode(error);
-        storeState = { status: "error", code };
-        throw error;
-      }
-    })();
+    if (!this.stores.has(id)) {
+      this.stores.set(id, {
+        promise: null,
+        state: { status: "idle" },
+      });
+    }
+
+    const entry = this.stores.get(id)!;
+
+    if (!entry.promise) {
+      entry.state = { status: "loading" };
+
+      entry.promise = (async () => {
+        try {
+          const store = await this.initializeStore(id);
+          entry.state = { status: "ready" };
+          return store;
+        } catch (error) {
+          const code = toLibraryImportErrorCode(error);
+          entry.state = { status: "error", code };
+          throw error;
+        }
+      })();
+    }
+
+    return entry.promise;
   }
 
-  return storePromise;
-}
+  getStoreImportState(libraryId?: string): StoreInitializationState {
+    // If no stores exist yet, return idle
+    if (this.stores.size === 0) {
+      return { status: "idle" };
+    }
 
-export async function waitForStoreInitialization(): Promise<void> {
-  const pending = storePromise;
+    const id = libraryId ?? this.defaultLibraryId;
+    if (!id) {
+      // Return the state of the first store if no ID specified
+      const firstEntry = this.stores.values().next().value;
+      return firstEntry?.state ?? { status: "idle" };
+    }
 
-  if (!pending) {
-    return;
+    const entry = this.stores.get(id);
+    return entry?.state ?? { status: "idle" };
   }
 
-  try {
-    await pending;
-  } catch {
-    // Swallow errors; state is already updated in getStore
+  getAllStoreStates(): Map<string, StoreInitializationState> {
+    const states = new Map<string, StoreInitializationState>();
+    for (const [id, entry] of this.stores) {
+      states.set(id, entry.state);
+    }
+    return states;
+  }
+
+  resetStore(libraryId?: string): void {
+    if (libraryId) {
+      this.stores.delete(libraryId);
+    } else {
+      this.stores.clear();
+      this.defaultLibraryId = null;
+    }
+  }
+
+  private async resolveLibraryId(libraryId?: string): Promise<string> {
+    if (libraryId) {
+      return libraryId;
+    }
+
+    if (this.defaultLibraryId) {
+      return this.defaultLibraryId;
+    }
+
+    this.defaultLibraryId = await getDefaultLibraryId();
+    return this.defaultLibraryId;
+  }
+
+  private async initializeStore(libraryId: string): Promise<Store> {
+    const libraryPath = await getLibraryPath(libraryId);
+    const globalSortSettings = await loadGlobalSortSettings();
+    const data = await importLibraryMetadata(libraryPath, globalSortSettings);
+    const itemCounts = computeItemCounts(data.items, data.folders);
+
+    return new Store(
+      libraryId,
+      data.libraryPath,
+      data.applicationVersion,
+      data.folders,
+      data.items,
+      data.smartFolders,
+      data.smartFolderItemIds,
+      globalSortSettings,
+      itemCounts,
+    );
   }
 }
 
-async function initializeStore(): Promise<Store> {
-  const libraryPath = await discoverLibraryPath();
-  const globalSortSettings = await loadGlobalSortSettings();
-  const data = await importLibraryMetadata(libraryPath, globalSortSettings);
-  const itemCounts = computeItemCounts(data.items, data.folders);
+const storeRegistry = new StoreRegistry();
 
-  return new Store(
-    data.libraryPath,
-    data.applicationVersion,
-    data.folders,
-    data.items,
-    data.smartFolders,
-    data.smartFolderItemIds,
-    globalSortSettings,
-    itemCounts,
-  );
+// Exported functions for backward compatibility and new multi-library access
+export function getStoreImportState(libraryId?: string): StoreInitializationState {
+  return storeRegistry.getStoreImportState(libraryId);
 }
 
-export function resetStore(): void {
-  storePromise = null;
-  storeState = { status: "idle" };
+export async function getStore(libraryId?: string): Promise<Store> {
+  return storeRegistry.getStore(libraryId);
+}
+
+export async function waitForStoreInitialization(libraryId?: string): Promise<void> {
+  const id = libraryId ?? (await getDefaultLibraryId());
+  const state = storeRegistry.getStoreImportState(id);
+
+  if (state.status === "idle") {
+    // Trigger initialization
+    try {
+      await storeRegistry.getStore(id);
+    } catch {
+      // Swallow errors; state is already updated
+    }
+  }
+}
+
+export function resetStore(libraryId?: string): void {
+  storeRegistry.resetStore(libraryId);
+}
+
+// Library config helpers
+export async function getLibraryDefinitions(): Promise<LibraryDefinition[]> {
+  const config = await loadLibraryConfig();
+  return config.libraries;
 }
 
 export const __resetStoreForTests = resetStore;

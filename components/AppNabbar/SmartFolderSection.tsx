@@ -14,12 +14,14 @@ type SmartFolderSectionProps = {
   smartFolders: SmartFolder[];
   onLinkClick: () => void;
   initialExpandedIds: string[];
+  defaultLibraryId: string;
 };
 
 export function SmartFolderSection({
   smartFolders,
   onLinkClick,
   initialExpandedIds,
+  defaultLibraryId,
 }: SmartFolderSectionProps) {
   const t = useTranslations();
   const smartFolderTreeData = useMemo(
