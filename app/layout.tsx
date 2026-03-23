@@ -1,5 +1,6 @@
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
+import "./globals.css";
 
 import {
   Center,
@@ -27,6 +28,10 @@ import {
   type StoreInitializationState,
 } from "@/data/store";
 import { getLibraryName } from "@/utils/get-library-name";
+import { Geist } from "next/font/google";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 export const dynamic = "force-dynamic";
 
@@ -48,7 +53,7 @@ export default async function RootLayout({
   const loadingLabel = t("import.loading");
 
   return (
-    <html lang={locale} {...mantineHtmlProps}>
+    <html lang={locale} {...mantineHtmlProps} className={cn("font-sans", geist.variable)}>
       <head>
         <ColorSchemeScript />
       </head>
