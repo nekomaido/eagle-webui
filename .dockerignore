@@ -1,0 +1,15 @@
+node_modules
+.next
+out
+dist
+*.log
+.env*
+.git
+.gitignore
+*.md
+.vscode
+.idea
+*.test.ts
+*.test.js
+coverage
+.claude

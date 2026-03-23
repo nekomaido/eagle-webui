@@ -65,6 +65,45 @@ After running this command, open `http://<your-computer's-LAN-IP>:34917/` from e
 | `--eagle-library-path` | Path to the Eagle library folder (if omitted, detected automatically via Eagle API) |
 | `--eagle-api-url`      | Eagle API endpoint for library detection (default: http://localhost:41595)          |
 
+### Docker
+
+Run with Docker Compose:
+
+```bash
+# Set your library path
+export EAGLE_LIBRARY_PATH=/path/to/Your.library
+
+# Build and run
+docker compose up -d
+```
+
+Then open http://localhost:34917/ in your browser.
+
+#### Docker Compose Configuration
+
+Create a `docker-compose.override.yml` for custom setup:
+
+```yaml
+services:
+  eagle-webui:
+    volumes:
+      - /path/to/Your.library:/libraries:ro
+```
+
+For multiple libraries:
+
+```yaml
+services:
+  eagle-webui:
+    environment:
+      - EAGLE_LIBRARY_PATH='["/libraries/personal", "/libraries/work"]'
+    volumes:
+      - /path/to/Personal.library:/libraries/personal:ro
+      - /path/to/Work.library:/libraries/work:ro
+```
+
+**⚠️ Security Warning:** When using Docker, avoid exposing the port to public networks. Use `127.0.0.1:34917:34917` if you only want local access.
+
 ### Multi-Library Support
 
 You can configure multiple Eagle libraries and switch between them via the UI.

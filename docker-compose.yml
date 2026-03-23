@@ -1,0 +1,29 @@
+services:
+  eagle-webui:
+    build: .
+    image: eagle-webui:latest
+    container_name: eagle-webui
+    ports:
+      - "34917:34917"
+    environment:
+      # Path to Eagle library inside container
+      - EAGLE_LIBRARY_PATH=/libraries
+    volumes:
+      # Mount your Eagle library folder
+      # On macOS/Linux: Use your actual library path
+      # On Windows: Use /c/Users/.../Eagle/Library.library format
+      - ${EAGLE_LIBRARY_PATH:-./library}:/libraries:ro
+    restart: unless-stopped
+
+# Example for multiple libraries:
+# services:
+#   eagle-webui:
+#     build: .
+#     ports:
+#       - "34917:34917"
+#     environment:
+#       - EAGLE_LIBRARY_PATH='["/libraries/personal", "/libraries/work"]'
+#     volumes:
+#       - /path/to/Personal.library:/libraries/personal:ro
+#       - /path/to/Work.library:/libraries/work:ro
+#     restart: unless-stopped
