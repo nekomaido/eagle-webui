@@ -2,13 +2,13 @@ import {
   type LibraryImportErrorCode,
   toLibraryImportErrorCode,
 } from "./errors";
+import { importLibraryMetadata } from "./library/import-metadata";
 import {
   getDefaultLibraryId,
   getLibraryPath,
-  loadLibraryConfig,
   type LibraryDefinition,
+  loadLibraryConfig,
 } from "./library-config";
-import { importLibraryMetadata } from "./library/import-metadata";
 import { loadGlobalSortSettings } from "./settings";
 import type { SmartFolder, SmartFolderItemMap } from "./smart-folders";
 import { type SortContext, sortItems } from "./sort-items";
@@ -579,7 +579,9 @@ class StoreRegistry {
 const storeRegistry = new StoreRegistry();
 
 // Exported functions for backward compatibility and new multi-library access
-export function getStoreImportState(libraryId?: string): StoreInitializationState {
+export function getStoreImportState(
+  libraryId?: string,
+): StoreInitializationState {
   return storeRegistry.getStoreImportState(libraryId);
 }
 
@@ -587,7 +589,9 @@ export async function getStore(libraryId?: string): Promise<Store> {
   return storeRegistry.getStore(libraryId);
 }
 
-export async function waitForStoreInitialization(libraryId?: string): Promise<void> {
+export async function waitForStoreInitialization(
+  libraryId?: string,
+): Promise<void> {
   const id = libraryId ?? (await getDefaultLibraryId());
   const state = storeRegistry.getStoreImportState(id);
 

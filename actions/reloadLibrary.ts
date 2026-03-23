@@ -10,7 +10,9 @@ export type ReloadLibraryResult =
   | { ok: true }
   | { ok: false; code: LibraryImportErrorCode };
 
-export async function reloadLibrary(libraryId?: string): Promise<ReloadLibraryResult> {
+export async function reloadLibrary(
+  libraryId?: string,
+): Promise<ReloadLibraryResult> {
   await waitForStoreInitialization(libraryId);
   resetStore(libraryId);
 

@@ -1,13 +1,13 @@
 "use client";
 
-import { Loader, Select, ActionIcon, Group } from "@mantine/core";
+import { ActionIcon, Group, Loader, Select } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { IconRefresh } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { reloadLibrary } from "@/actions/reloadLibrary";
-import type { LibraryDefinition } from "@/data/library-config";
 import { getLibraryImportErrorMessageKey } from "@/data/errors";
+import type { LibraryDefinition } from "@/data/library-config";
 import { useCurrentLibraryId } from "@/hooks/useCurrentLibrary";
 import { useTranslations } from "@/i18n/client";
 import { resolveErrorMessage } from "@/utils/resolve-error-message";

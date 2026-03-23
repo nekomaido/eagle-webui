@@ -8,11 +8,7 @@ import {
   Modal,
   Text,
 } from "@mantine/core";
-import {
-  IconArrowLeft,
-  IconExternalLink,
-  IconInfoCircle,
-} from "@tabler/icons-react";
+import { IconArrowLeft, IconExternalLink } from "@tabler/icons-react";
 import {
   MediaControlBar,
   MediaController,
@@ -129,8 +125,7 @@ export function MobileItemSlider({
     [items, libraryPath],
   );
 
-  const [isInspectorPresented, { open: openInspector, close: closeInspector }] =
-    useDisclosure(false);
+  const [isInspectorPresented, { close: closeInspector }] = useDisclosure(true);
   const drawerSwipeHandlers = useSwipeable({
     onSwipedRight: closeInspector,
   });
@@ -153,13 +148,6 @@ export function MobileItemSlider({
         <Text size="sm">
           {activeIndex + 1} / {items.length}
         </Text>
-        <div className={classes.headerTrailing}>
-          <CloseButton
-            icon={<IconInfoCircle stroke={1.2} />}
-            onClick={openInspector}
-            aria-label="Inspector"
-          />
-        </div>
       </header>
 
       <div className={classes.wrapper} {...swipeHandlers}>

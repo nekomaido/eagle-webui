@@ -12,10 +12,11 @@ import {
   ScaleControl,
 } from "@/components/CollectionControls/ScaleControl";
 import { ItemList, type ItemSelection } from "@/components/ItemList";
-import type { ItemPreview } from "@/data/types";
+import type { Folder, ItemPreview } from "@/data/types";
 import { useTranslations } from "@/i18n/client";
-import { useIsMobile } from "@/utils/responsive";
+import { useInspectorState } from "@/stores/inspector-state";
 import { buildLibraryUrl } from "@/utils/library-context";
+import { useIsMobile } from "@/utils/responsive";
 import {
   CollectionSortControls,
   type CollectionSortState,
@@ -41,6 +42,9 @@ interface CollectionPageProps {
   sortState: CollectionSortState;
   subfolders: Subfolder[];
   subfolderBasePath?: string;
+  folderId?: string;
+  folder?: Folder & { itemCount: number };
+  collectionType?: "all" | "uncategorized" | "trash";
 }
 
 export default function CollectionPage(props: CollectionPageProps) {
@@ -79,6 +83,9 @@ function CollectionPageImpl({
   sortState,
   subfolders,
   subfolderBasePath = "/folders",
+  folderId,
+  folder,
+  collectionType,
 }: CollectionPageProps) {
   const [selectedItemId, setSelectedItemId] = useState<string>();
   const [listStateSnapshot, setListStateSnapshot] =
@@ -88,6 +95,31 @@ function CollectionPageImpl({
   const sectionTranslations = useTranslations("collection.sections");
   const headerTranslations = useTranslations("collection.header");
   const hasActiveFilters = !!search || !!tag;
+
+  const { inspectFolder, inspectCollection, clearInspector } =
+    useInspectorState();
+
+  // Set inspector context based on what we're viewing
+  useEffect(() => {
+    if (folderId && folder) {
+      // Viewing a folder
+      inspectFolder(folderId, folder, 0);
+    } else if (collectionType) {
+      // Viewing a special collection (all/uncategorized/trash)
+      inspectCollection(collectionType, items.length, 0);
+    } else {
+      // Not viewing a folder or collection, clear inspector
+      clearInspector();
+    }
+  }, [
+    folderId,
+    folder,
+    collectionType,
+    items.length,
+    inspectFolder,
+    inspectCollection,
+    clearInspector,
+  ]);
 
   // Build home URL preserving library param
   const homeUrl = buildLibraryUrl("/", libraryId, defaultLibraryId);

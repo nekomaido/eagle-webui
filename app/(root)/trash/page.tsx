@@ -37,6 +37,7 @@ export default async function TrashPage({ searchParams }: TrashPageProps) {
       search={search}
       tag={tag}
       subfolders={[]}
+      collectionType="trash"
       sortState={{
         kind: "global",
         value: store.globalSortSettings,

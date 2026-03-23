@@ -2,7 +2,6 @@
 
 import { usePathname } from "next/navigation";
 import { useMemo } from "react";
-import { getDefaultLibraryId } from "@/data/library-config";
 
 /**
  * Hook to get the current library ID from the URL path.

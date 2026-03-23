@@ -52,6 +52,11 @@
       "dateImported": "Date Imported",
       "dateCreated": "Date Created",
       "dateModified": "Date Modified"
+    },
+    "folderProperties": {
+      "description": "Description",
+      "items": "Items",
+      "size": "Total size"
     }
   },
   "navbar": {

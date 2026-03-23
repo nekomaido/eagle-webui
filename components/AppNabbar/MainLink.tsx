@@ -56,7 +56,9 @@ export function MainLink({
       return true;
     }
 
-    return targetUrl !== "/" && (pathname?.startsWith(`${targetUrl}/`) ?? false);
+    return (
+      targetUrl !== "/" && (pathname?.startsWith(`${targetUrl}/`) ?? false)
+    );
   }, [pathname, targetUrl]);
 
   const handleClick = () => {

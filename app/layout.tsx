@@ -11,6 +11,7 @@ import {
   Text,
 } from "@mantine/core";
 import type { Metadata } from "next";
+import { Geist } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
 import { AppLayout } from "@/components/AppLayout";
@@ -27,10 +28,9 @@ import {
   getStoreImportState,
   type StoreInitializationState,
 } from "@/data/store";
-import { Geist } from "next/font/google";
 import { cn } from "@/lib/utils";
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
 export const dynamic = "force-dynamic";
 
@@ -52,7 +52,11 @@ export default async function RootLayout({
   const loadingLabel = t("import.loading");
 
   return (
-    <html lang={locale} {...mantineHtmlProps} className={cn("font-sans", geist.variable)}>
+    <html
+      lang={locale}
+      {...mantineHtmlProps}
+      className={cn("font-sans", geist.variable)}
+    >
       <head>
         <ColorSchemeScript />
       </head>

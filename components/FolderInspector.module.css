@@ -1,0 +1,46 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-md);
+  padding: var(--mantine-spacing-sm);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-xs);
+}
+
+.subsection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-xs);
+}
+
+.sectionTitle {
+  font-size: var(--mantine-font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--mantine-color-dimmed);
+}
+
+.description {
+  font-size: var(--mantine-font-size-sm);
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.properties {
+  font-size: var(--mantine-font-size-sm);
+}
+
+.propertyLabel {
+  font-weight: 500;
+  color: var(--mantine-color-dimmed);
+  width: 100px;
+}
+
+.propertyValue {
+  text-align: right;
+}

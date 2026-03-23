@@ -13,7 +13,6 @@ import {
   IconChevronLeft,
   IconChevronRight,
   IconExternalLink,
-  IconInfoCircle,
 } from "@tabler/icons-react";
 import {
   type ReactNode,
@@ -24,7 +23,7 @@ import {
   useState,
 } from "react";
 import type { ItemDetails, ItemPreview } from "@/data/types";
-import { useSliderState } from "@/stores/slider-state";
+import { useInspectorState } from "@/stores/inspector-state";
 import { getImageUrl, getThumbnailUrl } from "@/utils/item";
 import AppHeader from "./AppHeader";
 import classes from "./ItemSlider.module.css";
@@ -60,23 +59,16 @@ export function ItemSlider({
     return () => window.removeEventListener("keydown", handleKey);
   }, [dismiss]);
 
-  const { setIsPresented, inspectedItemId, inspectItem } = useSliderState();
+  const { inspectItem } = useInspectorState();
   // biome-ignore lint/correctness/useExhaustiveDependencies: depend on lifecycle
   useEffect(() => {
-    setIsPresented(true);
-    return () => setIsPresented(false);
+    return () => inspectItem(undefined);
   }, []);
 
-  // inspector handling
-  const toggleInspector = useCallback(() => {
-    inspectItem(inspectedItemId ? undefined : items[activeIndex].id);
-  }, [inspectItem, inspectedItemId, items, activeIndex]);
-
+  // Auto-inspect current item
   useEffect(() => {
-    if (inspectedItemId) {
-      inspectItem(items[activeIndex].id);
-    }
-  }, [inspectItem, inspectedItemId, items, activeIndex]);
+    inspectItem(items[activeIndex].id);
+  }, [inspectItem, items, activeIndex]);
 
   const playAndPauseVideo = useCallback(
     (swiper: SwiperType) => {
@@ -145,11 +137,6 @@ export function ItemSlider({
             disabled={activeIndex === items.length - 1}
             onClick={handleNext}
             aria-label="Next"
-          />
-          <CloseButton
-            icon={<IconInfoCircle stroke={1.2} />}
-            onClick={toggleInspector}
-            aria-label="Inspector"
           />
         </div>
       </AppHeader>

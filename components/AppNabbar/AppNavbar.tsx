@@ -10,12 +10,12 @@ import {
 } from "@tabler/icons-react";
 import { useCallback } from "react";
 import { useSwipeable } from "react-swipeable";
+import { LibrarySelector } from "@/components/LibrarySelector";
 import type { LibraryDefinition } from "@/data/library-config";
 import type { NavbarExpandedState } from "@/data/settings";
 import type { SmartFolder } from "@/data/smart-folders";
 import type { Folder, ItemCounts } from "@/data/types";
 import { useTranslations } from "@/i18n/client";
-import { LibrarySelector } from "@/components/LibrarySelector";
 import classes from "./AppNavbar.module.css";
 import { FolderSection } from "./FolderSection";
 import { MainLink } from "./MainLink";

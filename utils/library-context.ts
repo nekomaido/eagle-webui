@@ -18,7 +18,9 @@ export function buildLibraryUrl(
   }
 
   // Non-default library uses /library/{id}/ prefix
-  return normalizedPath ? `/library/${libraryId}/${normalizedPath}` : `/library/${libraryId}`;
+  return normalizedPath
+    ? `/library/${libraryId}/${normalizedPath}`
+    : `/library/${libraryId}`;
 }
 
 /**

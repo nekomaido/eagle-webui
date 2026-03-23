@@ -34,6 +34,7 @@ export default async function FolderPage({
   const search = resolveSearchQuery(resolvedSearchParams?.search);
   const tag = resolveTagFilter(resolvedSearchParams?.tag);
   const items = store.getFolderItemPreviews(folderId, search, tag);
+  const itemCount = items.length;
   const subfolders: Subfolder[] = [];
 
   for (const childId of folder.children) {
@@ -66,6 +67,8 @@ export default async function FolderPage({
       search={search}
       tag={tag}
       subfolders={subfolders}
+      folderId={folderId}
+      folder={{ ...folder, itemCount }}
       sortState={{
         kind: "folder",
         folderId,

@@ -6,6 +6,8 @@ import {
   CloseButton,
   Group,
   ScrollArea,
+  Table,
+  Text,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { IconLayoutSidebarRightCollapse } from "@tabler/icons-react";
@@ -14,10 +16,13 @@ import type { LibraryDefinition } from "@/data/library-config";
 import type { NavbarExpandedState } from "@/data/settings";
 import type { SmartFolder } from "@/data/smart-folders";
 import type { Folder, ItemCounts } from "@/data/types";
-import { useSliderState } from "@/stores/slider-state";
+import { useTranslations } from "@/i18n/client";
+import { useInspectorState } from "@/stores/inspector-state";
+import { formatFileSize } from "@/utils/item-details";
 import { HeaderSlotProvider, useHeaderSlot } from "./AppHeader";
 import classes from "./AppLayout.module.css";
 import { AppNavbar } from "./AppNabbar/AppNavbar";
+import { FolderInspector } from "./FolderInspector";
 import { ItemInspector } from "./ItemInspector";
 
 type AppLayoutProps = {
@@ -36,6 +41,67 @@ function HeaderOutlet() {
   return <>{header}</>;
 }
 
+function CollectionInspector({
+  type,
+  itemCount,
+  totalSize,
+}: {
+  type: "all" | "uncategorized" | "trash";
+  itemCount: number;
+  totalSize: number;
+}) {
+  const t = useTranslations("inspector");
+  const tCollection = useTranslations("collection");
+  const sizeValue = formatFileSize(totalSize);
+
+  const titles = {
+    all: tCollection("all"),
+    uncategorized: tCollection("uncategorized"),
+    trash: tCollection("trash"),
+  };
+
+  return (
+    <div style={{ padding: "16px" }}>
+      <div style={{ marginBottom: "16px" }}>
+        <Text style={{ wordBreak: "break-all", fontSize: "1.1rem" }}>
+          {titles[type]}
+        </Text>
+      </div>
+
+      <Table
+        verticalSpacing="sm"
+        horizontalSpacing="xs"
+        style={{ width: "100%" }}
+      >
+        <tbody>
+          <tr>
+            <td style={{ padding: "4px 0" }}>
+              <Text size="sm" c="dimmed">
+                {t("folderProperties.items")}
+              </Text>
+            </td>
+            <td style={{ padding: "4px 0", textAlign: "right" }}>
+              {itemCount}
+            </td>
+          </tr>
+          {sizeValue && (
+            <tr>
+              <td style={{ padding: "4px 0" }}>
+                <Text size="sm" c="dimmed">
+                  {t("folderProperties.size")}
+                </Text>
+              </td>
+              <td style={{ padding: "4px 0", textAlign: "right" }}>
+                {sizeValue}
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </Table>
+    </div>
+  );
+}
+
 export function AppLayout({
   children,
   folders,
@@ -49,7 +115,9 @@ export function AppLayout({
   const [mobileOpened, { toggle: toggleMobile }] = useDisclosure();
   const [desktopOpened, { toggle: toggleDesktop }] = useDisclosure(true);
 
-  const { isPresented: isSliderPresented, inspectedItemId } = useSliderState();
+  const { context: inspectorContext } = useInspectorState();
+
+  const isSliderPresented = inspectorContext.kind === "item";
 
   return (
     <AppShell
@@ -64,8 +132,8 @@ export function AppLayout({
         width: 260,
         breakpoint: "sm",
         collapsed: {
-          mobile: !inspectedItemId,
-          desktop: !inspectedItemId,
+          mobile: false,
+          desktop: false,
         },
       }}
       padding="md"
@@ -119,12 +187,43 @@ export function AppLayout({
             component={ScrollArea}
             className={classes.asideScrollabel}
           >
-            {inspectedItemId && (
+            {inspectorContext.kind === "item" && (
               <ItemInspector
-                itemId={inspectedItemId}
+                itemId={inspectorContext.itemId}
                 libraryId={currentLibraryId}
                 defaultLibraryId={defaultLibraryId}
               />
+            )}
+            {inspectorContext.kind === "folder" && (
+              <FolderInspector
+                folder={
+                  inspectorContext.folder as Folder & {
+                    itemCount: number;
+                  }
+                }
+                totalSize={inspectorContext.totalSize}
+              />
+            )}
+            {inspectorContext.kind === "collection" && (
+              <CollectionInspector
+                type={inspectorContext.type}
+                itemCount={inspectorContext.itemCount}
+                totalSize={inspectorContext.totalSize}
+              />
+            )}
+            {inspectorContext.kind === "none" && (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  height: "100%",
+                  color: "var(--mantine-color-dimmed)",
+                  fontSize: "var(--mantine-font-size-sm)",
+                }}
+              >
+                Select a folder or item to view details
+              </div>
             )}
           </AppShell.Section>
         </AppShell.Aside>

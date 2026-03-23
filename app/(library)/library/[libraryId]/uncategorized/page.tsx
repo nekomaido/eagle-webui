@@ -41,6 +41,7 @@ export default async function UncategorizedPage({
       search={search}
       tag={tag}
       subfolders={[]}
+      collectionType="uncategorized"
       sortState={{
         kind: "global",
         value: store.globalSortSettings,

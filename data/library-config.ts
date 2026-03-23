@@ -30,7 +30,16 @@ export async function loadLibraryConfig(): Promise<LibraryConfig> {
 }
 
 async function detectLibraryConfig(): Promise<LibraryConfig> {
-  // Priority 1: EAGLE_LIBRARY_PATH env var (can be JSON array or single path)
+  // Priority 1: Auto-scan /libraries directory
+  const discoveredLibraries = await scanDefaultLibrariesDir();
+  if (discoveredLibraries.length > 0) {
+    return {
+      libraries: discoveredLibraries,
+      defaultLibraryId: discoveredLibraries[0].id,
+    };
+  }
+
+  // Priority 2: EAGLE_LIBRARY_PATH env var (can be JSON array or single path)
   const pathEnv = process.env.EAGLE_LIBRARY_PATH?.trim();
   if (pathEnv) {
     const paths = parseLibraryPaths(pathEnv);
@@ -39,14 +48,14 @@ async function detectLibraryConfig(): Promise<LibraryConfig> {
     }
   }
 
-  // Priority 2: eagle-libraries.json config file
+  // Priority 3: eagle-libraries.json config file
   const config = await tryLoadConfigFile();
   if (config) {
     validateLibraryConfig(config);
     return config;
   }
 
-  // Priority 3: Try to discover from Eagle API
+  // Priority 4: Try to discover from Eagle API
   const discoveredPaths = await discoverLibrariesFromAPI();
   if (discoveredPaths.length > 0) {
     return createConfigFromPaths(discoveredPaths);
@@ -61,7 +70,9 @@ function parseLibraryPaths(envValue: string): string[] {
     try {
       const parsed = JSON.parse(envValue);
       if (Array.isArray(parsed)) {
-        return parsed.filter((p): p is string => typeof p === "string" && p.trim().length > 0);
+        return parsed.filter(
+          (p): p is string => typeof p === "string" && p.trim().length > 0,
+        );
       }
     } catch {
       // Not valid JSON, fall through
@@ -104,7 +115,9 @@ function validateLibraryConfig(config: LibraryConfig): void {
   const ids = new Set<string>();
   for (const lib of config.libraries) {
     if (!lib.id || !lib.path) {
-      throw new Error(`Library missing required fields: ${JSON.stringify(lib)}`);
+      throw new Error(
+        `Library missing required fields: ${JSON.stringify(lib)}`,
+      );
     }
     if (ids.has(lib.id)) {
       throw new Error(`Duplicate library ID: ${lib.id}`);
@@ -143,6 +156,42 @@ export function generateLibraryId(libraryPath: string): string {
   return safeId || `library-${Date.now()}`;
 }
 
+async function scanDefaultLibrariesDir(): Promise<LibraryDefinition[]> {
+  const DEFAULT_DIR = "/libraries";
+
+  try {
+    // Check if /libraries exists and is readable
+    await fs.access(DEFAULT_DIR, fs.constants.R_OK);
+
+    const entries = await fs.readdir(DEFAULT_DIR, { withFileTypes: true });
+    const libraries: LibraryDefinition[] = [];
+
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        const libPath = path.join(DEFAULT_DIR, entry.name);
+        const metadataPath = path.join(libPath, "metadata.json");
+
+        // Check if this is a valid Eagle library
+        try {
+          await fs.access(metadataPath);
+          libraries.push({
+            id: generateLibraryId(libPath),
+            path: libPath,
+            name: entry.name,
+          });
+        } catch {
+          // Not a valid library, skip
+        }
+      }
+    }
+
+    return libraries;
+  } catch {
+    // /libraries doesn't exist or can't be read
+    return [];
+  }
+}
+
 export async function getLibraryDefinitions(): Promise<LibraryDefinition[]> {
   const config = await loadLibraryConfig();
   return config.libraries;
@@ -175,7 +224,9 @@ export async function getLibraryDefinition(
 
 // Discover libraries from Eagle API
 async function discoverLibrariesFromAPI(): Promise<string[]> {
-  const { discoverLibraryPath } = await import("./library/discover-library-path");
+  const { discoverLibraryPath } = await import(
+    "./library/discover-library-path"
+  );
 
   try {
     const libraryPath = await discoverLibraryPath();

@@ -7,13 +7,13 @@ import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ItemDetails } from "@/data/types";
 import { useLocale, useTranslations } from "@/i18n/client";
-import { buildLibraryUrl } from "@/utils/library-context";
 import {
   formatDateTime,
   formatDimensions,
   formatDuration,
   formatFileSize,
 } from "@/utils/item-details";
+import { buildLibraryUrl } from "@/utils/library-context";
 import classes from "./ItemInspector.module.css";
 
 type InspectorState =
@@ -33,7 +33,11 @@ type PropertyRow = {
   value: string;
 };
 
-export function ItemInspector({ itemId, libraryId, defaultLibraryId }: ItemInspectorProps) {
+export function ItemInspector({
+  itemId,
+  libraryId,
+  defaultLibraryId,
+}: ItemInspectorProps) {
   const t = useTranslations("inspector");
   const locale = useLocale();
   const pathname = usePathname();
@@ -77,7 +81,11 @@ export function ItemInspector({ itemId, libraryId, defaultLibraryId }: ItemInspe
   // Build URL with path-based library context
   const buildUrl = useCallback(
     (targetPath: string, params: Record<string, string> = {}) => {
-      const url = buildLibraryUrl(targetPath, libraryId, defaultLibraryId ?? "");
+      const url = buildLibraryUrl(
+        targetPath,
+        libraryId,
+        defaultLibraryId ?? "",
+      );
       const allParams = new URLSearchParams(params);
 
       // Add key param if same path

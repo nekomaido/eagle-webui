@@ -12,7 +12,10 @@ type TrashPageProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export default async function TrashPage({ params, searchParams }: TrashPageProps) {
+export default async function TrashPage({
+  params,
+  searchParams,
+}: TrashPageProps) {
   const { libraryId } = await params;
   const resolvedSearchParams = await searchParams;
   const defaultLibraryId = await getDefaultLibraryId();
@@ -38,6 +41,7 @@ export default async function TrashPage({ params, searchParams }: TrashPageProps
       search={search}
       tag={tag}
       subfolders={[]}
+      collectionType="trash"
       sortState={{
         kind: "global",
         value: store.globalSortSettings,

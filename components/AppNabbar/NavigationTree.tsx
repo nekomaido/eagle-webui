@@ -79,7 +79,14 @@ export function NavigationTree({
       tree={tree}
       expandOnClick={false}
       renderNode={({ node, expanded, hasChildren, elementProps, tree }) => {
-        const { to, icon, count, withLeftMargin, currentLibraryId, defaultLibraryId } = getLinkProps({
+        const {
+          to,
+          icon,
+          count,
+          withLeftMargin,
+          currentLibraryId,
+          defaultLibraryId,
+        } = getLinkProps({
           node,
           expanded,
           hasChildren,

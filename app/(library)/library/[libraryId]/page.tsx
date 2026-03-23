@@ -41,6 +41,7 @@ export default async function LibraryHomePage({
       search={search}
       tag={tag}
       subfolders={[]}
+      collectionType="all"
       sortState={{
         kind: "global",
         value: store.globalSortSettings,
