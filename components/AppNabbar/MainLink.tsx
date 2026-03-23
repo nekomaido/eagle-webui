@@ -2,9 +2,10 @@
 
 import type { UnstyledButtonProps } from "@mantine/core";
 import { Text, UnstyledButton } from "@mantine/core";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import type { ComponentPropsWithoutRef, ComponentType, ReactNode } from "react";
 import { useMemo } from "react";
+import { buildLibraryUrl } from "@/utils/library-context";
 import classes from "./MainLink.module.css";
 
 type MainLinkProps = Omit<
@@ -26,7 +27,8 @@ type MainLinkProps = Omit<
     withLeftMargin?: boolean;
     className?: string;
     onClick: () => void;
-    defaultLibraryId?: string;
+    currentLibraryId: string;
+    defaultLibraryId: string;
   };
 
 export function MainLink({
@@ -37,29 +39,28 @@ export function MainLink({
   withLeftMargin = true,
   className,
   onClick,
+  currentLibraryId,
   defaultLibraryId,
   ...props
 }: MainLinkProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
+
+  const targetUrl = useMemo(
+    () => buildLibraryUrl(to, currentLibraryId, defaultLibraryId),
+    [to, currentLibraryId, defaultLibraryId],
+  );
 
   const isActive = useMemo(() => {
-    if (pathname === to) {
+    if (pathname === targetUrl) {
       return true;
     }
 
-    return to !== "/" && pathname.startsWith(`${to}/`);
-  }, [pathname, to]);
+    return targetUrl !== "/" && (pathname?.startsWith(`${targetUrl}/`) ?? false);
+  }, [pathname, targetUrl]);
 
   const handleClick = () => {
-    if (pathname !== to) {
-      // Preserve library query parameter
-      const libraryParam = searchParams.get("library");
-      const targetUrl =
-        libraryParam && defaultLibraryId && libraryParam !== defaultLibraryId
-          ? `${to}?library=${libraryParam}`
-          : to;
+    if (pathname !== targetUrl) {
       router.push(targetUrl);
     }
 

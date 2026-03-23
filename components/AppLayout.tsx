@@ -23,7 +23,6 @@ import { ItemInspector } from "./ItemInspector";
 type AppLayoutProps = {
   children: ReactNode;
   folders: Folder[];
-  libraryName: string;
   libraries: LibraryDefinition[];
   defaultLibraryId: string;
   currentLibraryId: string;
@@ -40,7 +39,6 @@ function HeaderOutlet() {
 export function AppLayout({
   children,
   folders,
-  libraryName,
   libraries,
   defaultLibraryId,
   currentLibraryId,
@@ -101,7 +99,6 @@ export function AppLayout({
           toggleDesktop={toggleDesktop}
           folders={folders}
           itemCounts={itemCounts}
-          libraryName={libraryName}
           libraries={libraries}
           defaultLibraryId={defaultLibraryId}
           currentLibraryId={currentLibraryId}
@@ -122,7 +119,13 @@ export function AppLayout({
             component={ScrollArea}
             className={classes.asideScrollabel}
           >
-            {inspectedItemId && <ItemInspector itemId={inspectedItemId} />}
+            {inspectedItemId && (
+              <ItemInspector
+                itemId={inspectedItemId}
+                libraryId={currentLibraryId}
+                defaultLibraryId={defaultLibraryId}
+              />
+            )}
           </AppShell.Section>
         </AppShell.Aside>
       </HeaderSlotProvider>

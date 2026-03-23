@@ -1,73 +1,100 @@
 "use client";
 
-import { Menu, UnstyledButton, Group, Text } from "@mantine/core";
-import { IconChevronDown, IconLibrary } from "@tabler/icons-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { Loader, Select, ActionIcon, Group } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
+import { IconRefresh } from "@tabler/icons-react";
+import { useRouter } from "next/navigation";
+import { useTransition } from "react";
+import { reloadLibrary } from "@/actions/reloadLibrary";
 import type { LibraryDefinition } from "@/data/library-config";
-import classes from "./LibrarySelector.module.css";
+import { getLibraryImportErrorMessageKey } from "@/data/errors";
+import { useCurrentLibraryId } from "@/hooks/useCurrentLibrary";
+import { useTranslations } from "@/i18n/client";
+import { resolveErrorMessage } from "@/utils/resolve-error-message";
 
 type LibrarySelectorProps = {
   libraries: LibraryDefinition[];
-  currentLibraryId: string;
   defaultLibraryId: string;
 };
 
 export function LibrarySelector({
   libraries,
-  currentLibraryId,
   defaultLibraryId,
 }: LibrarySelectorProps) {
+  const t = useTranslations();
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const [isReloading, startReload] = useTransition();
+  const urlLibraryId = useCurrentLibraryId();
+  const currentLibraryId = urlLibraryId ?? defaultLibraryId;
 
   // Don't show selector if only one library
   if (libraries.length <= 1) {
     return null;
   }
 
-  const currentLibrary = libraries.find((lib) => lib.id === currentLibraryId);
-  const displayName = currentLibrary?.name ?? currentLibrary?.id ?? "Library";
-
-  const handleLibrarySelect = (libraryId: string) => {
-    const params = new URLSearchParams(searchParams?.toString() ?? "");
-
-    if (libraryId === defaultLibraryId) {
-      params.delete("library");
-    } else {
-      params.set("library", libraryId);
-    }
-
-    const queryString = params.toString();
-    const newPath = queryString ? `/?${queryString}` : "/";
-    router.push(newPath);
+  const handleLibrarySelect = (libraryId: string | null) => {
+    if (!libraryId) return;
+    router.push(`/library/${libraryId}`);
   };
 
-  return (
-    <Menu shadow="md" width={200}>
-      <Menu.Target>
-        <UnstyledButton className={classes.trigger}>
-          <Group gap="xs">
-            <IconLibrary size={16} stroke={1.5} />
-            <Text size="sm" fw={500} truncate>
-              {displayName}
-            </Text>
-            <IconChevronDown size={12} />
-          </Group>
-        </UnstyledButton>
-      </Menu.Target>
+  const handleReload = () => {
+    startReload(async () => {
+      try {
+        const result = await reloadLibrary(currentLibraryId);
 
-      <Menu.Dropdown>
-        <Menu.Label>Libraries</Menu.Label>
-        {libraries.map((lib) => (
-          <Menu.Item
-            key={lib.id}
-            onClick={() => handleLibrarySelect(lib.id)}
-            className={lib.id === currentLibraryId ? classes.activeItem : undefined}
-          >
-            {lib.name ?? lib.id}
-          </Menu.Item>
-        ))}
-      </Menu.Dropdown>
-    </Menu>
+        if (result.ok) {
+          router.refresh();
+          return;
+        }
+
+        notifications.show({
+          color: "red",
+          title: t("common.notifications.librarySyncFailedTitle"),
+          message: t(getLibraryImportErrorMessageKey(result.code)),
+        });
+      } catch (error) {
+        notifications.show({
+          color: "red",
+          title: t("common.notifications.librarySyncFailedTitle"),
+          message: resolveErrorMessage(
+            error,
+            t("common.notifications.librarySyncFailedMessage"),
+          ),
+        });
+      }
+    });
+  };
+
+  const reloadLabel = isReloading
+    ? t("common.library.reloading")
+    : t("common.library.reload");
+
+  return (
+    <Group gap={4} wrap="nowrap">
+      <Select
+        value={currentLibraryId}
+        onChange={handleLibrarySelect}
+        data={libraries.map((lib) => ({
+          value: lib.id,
+          label: lib.name ?? lib.id,
+        }))}
+        size="xs"
+        w={140}
+      />
+      <ActionIcon
+        variant="subtle"
+        color="gray"
+        size="sm"
+        onClick={handleReload}
+        disabled={isReloading}
+        aria-label={reloadLabel}
+      >
+        {isReloading ? (
+          <Loader size={14} color="gray" />
+        ) : (
+          <IconRefresh size={14} stroke={1.5} />
+        )}
+      </ActionIcon>
+    </Group>
   );
 }

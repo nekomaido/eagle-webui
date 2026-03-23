@@ -3,7 +3,7 @@
 import { Anchor, Center, Loader, Table, Text } from "@mantine/core";
 import { IconExternalLink, IconStarFilled } from "@tabler/icons-react";
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ItemDetails } from "@/data/types";
 import { useLocale, useTranslations } from "@/i18n/client";
@@ -23,6 +23,7 @@ type InspectorState =
 
 type ItemInspectorProps = {
   itemId: string;
+  libraryId?: string;
   defaultLibraryId?: string;
 };
 
@@ -32,11 +33,10 @@ type PropertyRow = {
   value: string;
 };
 
-export function ItemInspector({ itemId, defaultLibraryId }: ItemInspectorProps) {
+export function ItemInspector({ itemId, libraryId, defaultLibraryId }: ItemInspectorProps) {
   const t = useTranslations("inspector");
   const locale = useLocale();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const [state, setState] = useState<InspectorState>({
     status: "loading",
     item: null,
@@ -74,17 +74,11 @@ export function ItemInspector({ itemId, defaultLibraryId }: ItemInspectorProps) 
     void fetchItem(controller.signal);
   }, [fetchItem]);
 
-  // Build URL with library param preserved
+  // Build URL with path-based library context
   const buildUrl = useCallback(
     (targetPath: string, params: Record<string, string> = {}) => {
-      const libraryId = searchParams.get("library") ?? undefined;
+      const url = buildLibraryUrl(targetPath, libraryId, defaultLibraryId ?? "");
       const allParams = new URLSearchParams(params);
-      let url = targetPath;
-
-      // Add library param if not default
-      if (libraryId && libraryId !== defaultLibraryId) {
-        allParams.set("library", libraryId);
-      }
 
       // Add key param if same path
       if (targetPath === pathname) {
@@ -94,7 +88,7 @@ export function ItemInspector({ itemId, defaultLibraryId }: ItemInspectorProps) 
       const queryString = allParams.toString();
       return queryString ? `${url}?${queryString}` : url;
     },
-    [searchParams, pathname, defaultLibraryId],
+    [libraryId, defaultLibraryId, pathname],
   );
 
   useEffect(() => {

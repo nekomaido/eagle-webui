@@ -1,45 +1,38 @@
-import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import CollectionPage from "@/components/CollectionPage";
 import { getDefaultLibraryId } from "@/data/library-config";
 import { loadListScaleSetting } from "@/data/settings";
 import { getStore } from "@/data/store";
-import { getLibraryIdFromParams } from "@/utils/library-context";
 import { resolveSearchQuery, resolveTagFilter } from "@/utils/search-query";
 
 export const dynamic = "force-dynamic";
 
-type SmartFolderPageProps = {
+type LibraryHomePageProps = {
   params: Promise<Record<string, string>>;
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export default async function SmartFolderPage({
+export default async function LibraryHomePage({
   params,
   searchParams,
-}: SmartFolderPageProps) {
-  const { smartFolderId } = await params;
+}: LibraryHomePageProps) {
+  const { libraryId } = await params;
   const resolvedSearchParams = await searchParams;
   const defaultLibraryId = await getDefaultLibraryId();
-  const libraryId =
-    getLibraryIdFromParams(resolvedSearchParams) ?? defaultLibraryId;
 
-  const [store, listScale] = await Promise.all([
+  const [t, store, listScale] = await Promise.all([
+    getTranslations(),
     getStore(libraryId),
     loadListScaleSetting(),
   ]);
-  const folder = store.getSmartFolder(smartFolderId);
-
-  if (!folder) {
-    notFound();
-  }
 
   const search = resolveSearchQuery(resolvedSearchParams?.search);
   const tag = resolveTagFilter(resolvedSearchParams?.tag);
-  const items = store.getSmartFolderItemPreviews(smartFolderId, search, tag);
+  const items = store.getItemPreviews(search, tag);
 
   return (
     <CollectionPage
-      title={folder.name}
+      title={t("collection.all")}
       libraryPath={store.libraryPath}
       libraryId={libraryId}
       defaultLibraryId={defaultLibraryId}
@@ -48,14 +41,9 @@ export default async function SmartFolderPage({
       search={search}
       tag={tag}
       subfolders={[]}
-      subfolderBasePath="/smartfolder"
       sortState={{
-        kind: "smart-folder",
-        smartFolderId,
-        value: {
-          orderBy: folder.orderBy,
-          sortIncrease: folder.sortIncrease,
-        },
+        kind: "global",
+        value: store.globalSortSettings,
       }}
     />
   );

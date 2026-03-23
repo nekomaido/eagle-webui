@@ -27,7 +27,6 @@ import {
   getStoreImportState,
   type StoreInitializationState,
 } from "@/data/store";
-import { getLibraryName } from "@/utils/get-library-name";
 import { Geist } from "next/font/google";
 import { cn } from "@/lib/utils";
 
@@ -128,13 +127,11 @@ async function ImportReadyLayout({
     loadNavbarExpandedState(),
     getLibraryDefinitions(),
   ]);
-  const libraryName = getLibraryName(store.libraryPath);
 
   return (
     <AppLayout
       folders={store.getFolders()}
       itemCounts={store.itemCounts}
-      libraryName={libraryName}
       libraries={libraries}
       defaultLibraryId={defaultLibraryId}
       currentLibraryId={store.libraryId}

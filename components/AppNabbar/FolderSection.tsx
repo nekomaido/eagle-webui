@@ -7,6 +7,7 @@ import { useCallback, useMemo } from "react";
 import { updateNavbarExpandedState } from "@/actions/updateNavbarExpandedState";
 import type { Folder } from "@/data/types";
 import { useTranslations } from "@/i18n/client";
+import { buildLibraryUrl } from "@/utils/library-context";
 import classes from "./FolderSection.module.css";
 import { NavigationTree, type NavigationTreeMeta } from "./NavigationTree";
 
@@ -14,6 +15,7 @@ type FolderSectionProps = {
   folders: Folder[];
   onLinkClick: () => void;
   initialExpandedIds: string[];
+  currentLibraryId: string;
   defaultLibraryId: string;
 };
 
@@ -21,6 +23,7 @@ export function FolderSection({
   folders,
   onLinkClick,
   initialExpandedIds,
+  currentLibraryId,
   defaultLibraryId,
 }: FolderSectionProps) {
   const t = useTranslations();
@@ -52,7 +55,8 @@ export function FolderSection({
   const getLinkProps = useCallback(
     ({ node, expanded, hasChildren }: NavigationTreeMeta) => {
       const folderId = String(node.value);
-      const to = `/folders/${encodeURIComponent(folderId)}`;
+      const basePath = `/folders/${encodeURIComponent(folderId)}`;
+      const to = buildLibraryUrl(basePath, currentLibraryId, defaultLibraryId);
       const icon = hasChildren && expanded ? IconFolderOpen : IconFolder;
 
       const count =
@@ -66,10 +70,11 @@ export function FolderSection({
         to,
         icon,
         count,
+        currentLibraryId,
         defaultLibraryId,
       };
     },
-    [aggregateFolderCounts, folderCounts, defaultLibraryId],
+    [aggregateFolderCounts, folderCounts, currentLibraryId, defaultLibraryId],
   );
 
   const handleExpandedChange = useCallback(

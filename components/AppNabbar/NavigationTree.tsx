@@ -28,7 +28,8 @@ export type NavigationTreeLinkProps = {
   }>;
   count?: number;
   withLeftMargin?: boolean;
-  defaultLibraryId?: string;
+  currentLibraryId: string;
+  defaultLibraryId: string;
 };
 
 type NavigationTreeProps = {
@@ -78,7 +79,7 @@ export function NavigationTree({
       tree={tree}
       expandOnClick={false}
       renderNode={({ node, expanded, hasChildren, elementProps, tree }) => {
-        const { to, icon, count, withLeftMargin, defaultLibraryId } = getLinkProps({
+        const { to, icon, count, withLeftMargin, currentLibraryId, defaultLibraryId } = getLinkProps({
           node,
           expanded,
           hasChildren,
@@ -130,6 +131,7 @@ export function NavigationTree({
                 label={node.label}
                 count={count}
                 withLeftMargin={withLeftMargin ?? !hasChildren}
+                currentLibraryId={currentLibraryId}
                 defaultLibraryId={defaultLibraryId}
                 onClick={onLinkClick}
                 onMouseDown={(event) => {

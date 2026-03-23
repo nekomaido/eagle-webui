@@ -7,6 +7,7 @@ import { useCallback, useMemo } from "react";
 import { updateNavbarExpandedState } from "@/actions/updateNavbarExpandedState";
 import type { SmartFolder } from "@/data/smart-folders";
 import { useTranslations } from "@/i18n/client";
+import { buildLibraryUrl } from "@/utils/library-context";
 import classes from "./FolderSection.module.css";
 import { NavigationTree, type NavigationTreeMeta } from "./NavigationTree";
 
@@ -14,6 +15,7 @@ type SmartFolderSectionProps = {
   smartFolders: SmartFolder[];
   onLinkClick: () => void;
   initialExpandedIds: string[];
+  currentLibraryId: string;
   defaultLibraryId: string;
 };
 
@@ -21,6 +23,7 @@ export function SmartFolderSection({
   smartFolders,
   onLinkClick,
   initialExpandedIds,
+  currentLibraryId,
   defaultLibraryId,
 }: SmartFolderSectionProps) {
   const t = useTranslations();
@@ -59,16 +62,19 @@ export function SmartFolderSection({
   const getLinkProps = useCallback(
     ({ node }: NavigationTreeMeta) => {
       const folderId = String(node.value);
-      const to = `/smartfolder/${encodeURIComponent(folderId)}`;
+      const basePath = `/smartfolder/${encodeURIComponent(folderId)}`;
+      const to = buildLibraryUrl(basePath, currentLibraryId, defaultLibraryId);
       const count = smartFolderCounts.get(folderId) ?? 0;
 
       return {
         to,
         icon: IconFolderCog,
         count,
+        currentLibraryId,
+        defaultLibraryId,
       };
     },
-    [smartFolderCounts],
+    [smartFolderCounts, currentLibraryId, defaultLibraryId],
   );
 
   const handleExpandedChange = useCallback(

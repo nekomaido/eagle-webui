@@ -3,20 +3,22 @@ import CollectionPage from "@/components/CollectionPage";
 import { getDefaultLibraryId } from "@/data/library-config";
 import { loadListScaleSetting } from "@/data/settings";
 import { getStore } from "@/data/store";
-import { getLibraryIdFromParams } from "@/utils/library-context";
 import { resolveSearchQuery, resolveTagFilter } from "@/utils/search-query";
 
 export const dynamic = "force-dynamic";
 
-type HomePageProps = {
+type UncategorizedPageProps = {
+  params: Promise<Record<string, string>>;
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export default async function HomePage({ searchParams }: HomePageProps) {
+export default async function UncategorizedPage({
+  params,
+  searchParams,
+}: UncategorizedPageProps) {
+  const { libraryId } = await params;
   const resolvedSearchParams = await searchParams;
   const defaultLibraryId = await getDefaultLibraryId();
-  const libraryId =
-    getLibraryIdFromParams(resolvedSearchParams) ?? defaultLibraryId;
 
   const [t, store, listScale] = await Promise.all([
     getTranslations(),
@@ -26,11 +28,11 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
   const search = resolveSearchQuery(resolvedSearchParams?.search);
   const tag = resolveTagFilter(resolvedSearchParams?.tag);
-  const items = store.getItemPreviews(search, tag);
+  const items = store.getUncategorizedItemPreviews(search, tag);
 
   return (
     <CollectionPage
-      title={t("collection.all")}
+      title={t("collection.uncategorized")}
       libraryPath={store.libraryPath}
       libraryId={libraryId}
       defaultLibraryId={defaultLibraryId}

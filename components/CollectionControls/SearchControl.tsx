@@ -44,7 +44,8 @@ export function SearchControl({ search, mobile = false }: SearchControlProps) {
       }
 
       const query = params.toString();
-      const nextUrl = query.length > 0 ? `${pathname}?${query}` : pathname;
+      const currentPath = pathname ?? "/";
+      const nextUrl = query.length > 0 ? `${currentPath}?${query}` : currentPath;
       router.replace(nextUrl, { scroll: false });
       lastAppliedValueRef.current = normalized;
     },

@@ -51,14 +51,15 @@ export default function CollectionPage(props: CollectionPageProps) {
   const [key, setKey] = useState("0");
 
   useEffect(() => {
-    const incoming = searchParams.get("key");
+    const incoming = searchParams?.get("key");
     if (incoming == null) return;
 
     setKey(incoming);
 
-    const sp = new URLSearchParams(searchParams.toString());
+    const sp = new URLSearchParams(searchParams?.toString() ?? "");
     sp.delete("key");
-    router.replace(sp.toString() ? `${pathname}?${sp}` : pathname, {
+    const currentPath = pathname ?? "/";
+    router.replace(sp.toString() ? `${currentPath}?${sp}` : currentPath, {
       scroll: false,
     });
   }, [pathname, router, searchParams]);

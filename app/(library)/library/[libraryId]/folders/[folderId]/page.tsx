@@ -4,7 +4,6 @@ import type { Subfolder } from "@/components/SubfolderList";
 import { getDefaultLibraryId } from "@/data/library-config";
 import { loadListScaleSetting } from "@/data/settings";
 import { getStore } from "@/data/store";
-import { getLibraryIdFromParams } from "@/utils/library-context";
 import { resolveSearchQuery, resolveTagFilter } from "@/utils/search-query";
 
 export const dynamic = "force-dynamic";
@@ -18,11 +17,9 @@ export default async function FolderPage({
   params,
   searchParams,
 }: FolderPageProps) {
-  const { folderId } = await params;
+  const { libraryId, folderId } = await params;
   const resolvedSearchParams = await searchParams;
   const defaultLibraryId = await getDefaultLibraryId();
-  const libraryId =
-    getLibraryIdFromParams(resolvedSearchParams) ?? defaultLibraryId;
 
   const [store, listScale] = await Promise.all([
     getStore(libraryId),
