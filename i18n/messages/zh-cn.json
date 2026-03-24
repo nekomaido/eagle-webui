@@ -93,8 +93,8 @@
     "loading": "正在导入 Eagle 库…",
     "error": {
       "title": "库同步失败。",
-      "instructions": "请确保 Eagle 与 Eagle WebUI 服务器运行在同一台设备上。<br></br>或者按以下方式指定库路径后再启动服务器：",
-      "commandExample": "npx @naamiru/eagle-webui --eagle-library-path \"/path/to/MyPhotos.library\""
+      "instructions": "请确保 Docker 内的库位于 `/eagle`，或本地运行时位于 `./eagle`。<br></br>然后使用以下方式启动服务器：",
+      "commandExample": "npx @naamiru/eagle-webui"
     }
   },
   "errors": {

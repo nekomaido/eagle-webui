@@ -98,8 +98,8 @@
     "loading": "Importing Eagle library…",
     "error": {
       "title": "Library sync failed.",
-      "instructions": "Make sure that Eagle and the Eagle WebUI server are both running on the same machine.<br></br>Alternatively, start the server with an explicit library path, such as:",
-      "commandExample": "npx @naamiru/eagle-webui --eagle-library-path \"/path/to/MyPhotos.library\""
+      "instructions": "Make sure the Eagle library is available under `/eagle` in Docker or `./eagle` when running locally.<br></br>Then start the server with:",
+      "commandExample": "npx @naamiru/eagle-webui"
     }
   },
   "errors": {

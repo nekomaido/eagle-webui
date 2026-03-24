@@ -5,7 +5,8 @@ import { useCallback, useEffect, useMemo, useRef } from "react";
 import { type GridStateSnapshot, VirtuosoGrid } from "react-virtuoso";
 import type { ItemPreview } from "@/data/types";
 import { useTranslations } from "@/i18n/client";
-import { getThumbnailUrl } from "@/utils/item";
+import { classifyItemMedia, getExtensionLabel } from "@/utils/item";
+import { ItemGridMedia } from "./item-media/ItemGridMedia";
 import classes from "./ItemList.module.css";
 import { computeGridStyle } from "./listGrid";
 
@@ -63,22 +64,16 @@ export function ItemList({
     if (!item) {
       return null;
     }
-    const { id, ext, duration } = item;
-    const extensionLabel = ext.toUpperCase();
-    const isVideo =
-      duration > 0 || extensionLabel === "GIF" || extensionLabel === "WEBP";
-    const showBadge = isVideo || extensionLabel === "URL";
+    const extensionLabel = getExtensionLabel(item.ext);
+    const mediaKind = classifyItemMedia(item);
+    const showBadge = mediaKind === "video" || extensionLabel === "URL";
     return (
       <>
-        {/** biome-ignore lint/a11y/useKeyWithClickEvents: image grid */}
-        {/** biome-ignore lint/performance/noImgElement: image grid */}
-        <img
-          className={classes.image}
-          src={getThumbnailUrl(id, libraryPath)}
-          alt={id}
-          onClick={() => handleSelect(id)}
-          loading="lazy"
-          decoding="async"
+        <ItemGridMedia
+          item={item}
+          libraryPath={libraryPath}
+          imageClassName={classes.image}
+          onSelect={handleSelect}
         />
         {showBadge ? (
           <div className={classes.typeBadge}>{extensionLabel}</div>

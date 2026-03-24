@@ -7,10 +7,9 @@ import { useMemo } from "react";
  * Hook to get the current library ID from the URL path.
  *
  * URL patterns:
- * - /                          → default library
- * - /folders/abc               → default library
  * - /library/test2             → test2 library
  * - /library/test2/folders/abc → test2 library
+ * - /settings                  → no library context
  */
 export function useCurrentLibraryId(): string | null {
   const pathname = usePathname();
@@ -24,7 +23,7 @@ export function useCurrentLibraryId(): string | null {
       return libraryMatch[1];
     }
 
-    // Otherwise, it's the default library (root routes)
+    // Global routes do not carry a library id in the pathname.
     return null;
   }, [pathname]);
 }

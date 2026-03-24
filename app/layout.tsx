@@ -14,15 +14,10 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
-import { AppLayout } from "@/components/AppLayout";
 import { AppMantineProvider } from "@/components/AppMantineProvider";
 import { ImportErrorScreen } from "@/components/ImportErrorScreen";
 import { ImportLoader } from "@/components/ImportLoader";
-import {
-  getDefaultLibraryId,
-  getLibraryDefinitions,
-} from "@/data/library-config";
-import { loadNavbarExpandedState } from "@/data/settings";
+import { getDefaultLibraryId } from "@/data/library-config";
 import {
   getStore,
   getStoreImportState,
@@ -95,11 +90,7 @@ function ImportStateContent({
     case "error":
       return <ImportErrorScreen code={state.code} />;
     case "ready":
-      return (
-        <ImportReadyLayout defaultLibraryId={defaultLibraryId}>
-          {children}
-        </ImportReadyLayout>
-      );
+      return <>{children}</>;
     default:
       return null;
   }
@@ -116,33 +107,5 @@ function ImportLoadingScreen({ label }: { label: string }) {
         </Stack>
       </Center>
     </>
-  );
-}
-
-async function ImportReadyLayout({
-  defaultLibraryId,
-  children,
-}: {
-  defaultLibraryId: string;
-  children: React.ReactNode;
-}) {
-  const store = await getStore(defaultLibraryId);
-  const [navbarExpandedState, libraries] = await Promise.all([
-    loadNavbarExpandedState(),
-    getLibraryDefinitions(),
-  ]);
-
-  return (
-    <AppLayout
-      folders={store.getFolders()}
-      itemCounts={store.itemCounts}
-      libraries={libraries}
-      defaultLibraryId={defaultLibraryId}
-      currentLibraryId={store.libraryId}
-      smartFolders={store.getSmartFolders()}
-      initialNavbarExpandedState={navbarExpandedState}
-    >
-      {children}
-    </AppLayout>
   );
 }

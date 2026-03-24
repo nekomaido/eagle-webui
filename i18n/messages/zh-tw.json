@@ -93,8 +93,8 @@
     "loading": "正在匯入 Eagle 資料庫…",
     "error": {
       "title": "資料庫同步失敗。",
-      "instructions": "請確認 Eagle 與 Eagle WebUI 伺服器在同一台機器上執行。<br></br>或是以下列方式指定資料庫路徑後啟動伺服器：",
-      "commandExample": "npx @naamiru/eagle-webui --eagle-library-path \"/path/to/MyPhotos.library\""
+      "instructions": "請確認 Docker 內的資料庫位於 `/eagle`，或本機執行時位於 `./eagle`。<br></br>接著用以下方式啟動伺服器：",
+      "commandExample": "npx @naamiru/eagle-webui"
     }
   },
   "errors": {

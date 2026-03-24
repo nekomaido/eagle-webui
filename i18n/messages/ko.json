@@ -93,8 +93,8 @@
     "loading": "Eagle 라이브러리를 가져오는 중…",
     "error": {
       "title": "라이브러리 동기화 실패.",
-      "instructions": "Eagle과 Eagle WebUI 서버가 동일한 컴퓨터에서 실행 중인지 확인하세요.<br></br>또는 다음과 같이 라이브러리 경로를 지정하여 서버를 시작하세요:",
-      "commandExample": "npx @naamiru/eagle-webui --eagle-library-path \"/path/to/MyPhotos.library\""
+      "instructions": "Docker에서는 라이브러리를 `/eagle`에, 로컬 실행에서는 `./eagle`에 두세요.<br></br>그다음 다음과 같이 서버를 시작하세요:",
+      "commandExample": "npx @naamiru/eagle-webui"
     }
   },
   "errors": {

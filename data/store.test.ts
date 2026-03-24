@@ -3,6 +3,11 @@
  */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { LibraryImportError } from "./errors";
+import {
+  getDefaultLibraryId,
+  getLibraryPath,
+  loadLibraryConfig,
+} from "./library-config";
 import { computeNameForSort } from "./name-for-sort";
 import type { SmartFolder, SmartFolderItemMap } from "./smart-folders";
 import {
@@ -12,19 +17,22 @@ import {
 import { computeItemCounts, getStoreImportState, Store } from "./store";
 import type { Folder, Item } from "./types";
 
-vi.mock("./library/discover-library-path", () => ({
-  discoverLibraryPath: vi.fn(),
+vi.mock("./library-config", () => ({
+  getDefaultLibraryId: vi.fn(),
+  getLibraryPath: vi.fn(),
+  loadLibraryConfig: vi.fn(),
 }));
 vi.mock("./library/import-metadata", () => ({
   importLibraryMetadata: vi.fn(),
 }));
 
-import { discoverLibraryPath } from "./library/discover-library-path";
 import type { LibraryImportPayload } from "./library/import-metadata";
 import { importLibraryMetadata } from "./library/import-metadata";
 import { __resetStoreForTests, getStore } from "./store";
 
-const discoverLibraryPathMock = vi.mocked(discoverLibraryPath);
+const getDefaultLibraryIdMock = vi.mocked(getDefaultLibraryId);
+const getLibraryPathMock = vi.mocked(getLibraryPath);
+const loadLibraryConfigMock = vi.mocked(loadLibraryConfig);
 const importLibraryMetadataMock = vi.mocked(importLibraryMetadata);
 const mockFolder: Folder = {
   id: "root",
@@ -70,11 +78,18 @@ const mockItem: Item = {
 describe("getStore", () => {
   beforeEach(() => {
     __resetStoreForTests();
-    discoverLibraryPathMock.mockReset();
+    getDefaultLibraryIdMock.mockReset();
+    getLibraryPathMock.mockReset();
+    loadLibraryConfigMock.mockReset();
     importLibraryMetadataMock.mockReset();
+    loadLibraryConfigMock.mockResolvedValue({
+      libraries: [{ id: "library-id", path: "C:/library" }],
+      defaultLibraryId: "library-id",
+    });
+    getDefaultLibraryIdMock.mockResolvedValue("library-id");
   });
   it("initializes the store once and reuses the cached instance", async () => {
-    discoverLibraryPathMock.mockResolvedValue("C:/library");
+    getLibraryPathMock.mockResolvedValue("C:/library");
     importLibraryMetadataMock.mockResolvedValue(mockLibraryData());
     const stateBefore = getStoreImportState();
     expect(stateBefore.status).toBe("idle");
@@ -86,18 +101,18 @@ describe("getStore", () => {
     expect(folders).toHaveLength(1);
     expect(folders[0]?.id).toBe("root");
     expect(importLibraryMetadataMock).toHaveBeenCalledTimes(1);
-    expect(discoverLibraryPathMock).toHaveBeenCalledTimes(1);
+    expect(getLibraryPathMock).toHaveBeenCalledTimes(1);
   });
   it("propagates LibraryImportError from discovery", async () => {
-    discoverLibraryPathMock.mockRejectedValue(
+    getLibraryPathMock.mockRejectedValue(
       new LibraryImportError("LIBRARY_PATH_NOT_FOUND"),
     );
     await expect(getStore()).rejects.toBeInstanceOf(LibraryImportError);
-    expect(discoverLibraryPathMock).toHaveBeenCalledTimes(1);
+    expect(getLibraryPathMock).toHaveBeenCalledTimes(1);
     expect(importLibraryMetadataMock).not.toHaveBeenCalled();
   });
   it("does not reinitialize automatically after a failure", async () => {
-    discoverLibraryPathMock.mockResolvedValue("C:/library");
+    getLibraryPathMock.mockResolvedValue("C:/library");
     importLibraryMetadataMock
       .mockRejectedValueOnce(new Error("boom"))
       .mockResolvedValue(mockLibraryData());
@@ -668,6 +683,7 @@ describe("Store tag filtering", () => {
 });
 
 function createStore(options: {
+  libraryId?: string;
   libraryPath?: string;
   applicationVersion?: string;
   folders?: Folder[];
@@ -677,6 +693,7 @@ function createStore(options: {
   smartFolderItemIds?: SmartFolderItemMap;
 }): Store {
   const {
+    libraryId = "library-id",
     libraryPath = "",
     applicationVersion = "",
     folders = [],
@@ -691,6 +708,7 @@ function createStore(options: {
   const itemIdMap = smartFolderItemIds ?? new Map<string, string[]>();
 
   return new Store(
+    libraryId,
     libraryPath,
     applicationVersion,
     folderMap,

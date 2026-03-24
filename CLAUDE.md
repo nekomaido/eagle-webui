@@ -18,7 +18,7 @@ npm run build
 # Start production server
 npm start
 
-# Run directly via npx (uses start.js entrypoint)
+# Run directly via npx (loads libraries from ./eagle)
 npx @naamiru/eagle-webui
 
 # Linting
@@ -43,7 +43,7 @@ npm test -- --watch
 
 The application supports multiple Eagle libraries via a dynamic routing system:
 
-- **Library Discovery**: Libraries are configured via `EAGLE_LIBRARY_PATH` environment variable (JSON array or single path), `eagle-libraries.json` config file, or auto-discovery via Eagle API
+- **Library Discovery**: Libraries are discovered by scanning `/eagle` first, then `./eagle`, for child `.library` folders containing `metadata.json`
 - **Routing**: Two parallel route groups handle library access:
   - `app/(root)/*` - Single-library mode (backward compatible)
   - `app/(library)/library/[libraryId]/*` - Multi-library mode with explicit library ID
@@ -132,7 +132,7 @@ Rules are parsed into typed objects and evaluated against items. Each rule type 
 
 - **Output Mode**: `standandalone` for containerized deployment
 - **Entry Point**: `start.js` for npm package usage
-- **Docker**: Multi-stage build with Alpine Linux final image
+- **Docker**: Multi-stage build with Alpine Linux final image, mounting the Eagle parent folder to `/eagle`
 - **Default Port**: 34917
 
 ## Important Constraints
@@ -140,4 +140,4 @@ Rules are parsed into typed objects and evaluated against items. Each rule type 
 - Read-only access: Never modifies Eagle library files
 - Eagle 4.x only: Validates `applicationVersion` in metadata.json
 - No authentication: Intended for local network use only
-- Library path required: Must be configured or discoverable via Eagle API
+- Library path required: `/eagle` in Docker or `./eagle` locally must contain one or more valid Eagle `.library` directories
